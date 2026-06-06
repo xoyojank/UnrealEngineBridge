@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Unreal Engine Bridge",
+  "version": "0.1.0",
+  "description": "Bridge remote pages to the local UE5 Remote Control HTTP API.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "http://127.0.0.1:30010/*",
+    "http://localhost:30010/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_title": "Unreal Engine Bridge"
+  }
+}
