@@ -20,31 +20,8 @@ Browsers do not allow remote websites to directly call your local Unreal Engine 
 - Restricts requests to local HTTP hosts only
 - Restricts requests to port `30010` on `127.0.0.1` / `localhost`
 - Returns both text and base64 payloads so pages can render JSON or binary responses such as images
-- Includes a full example page in `examples/remote.html`
-- Includes a packaged release artifact in `dist/unreal-engine-bridge.zip`
-
-## Repository layout
-
-```text
-.
-├── README.md
-├── dist/
-│   └── unreal-engine-bridge.zip
-├── examples/
-│   └── remote.html
-└── src/
-    ├── manifest.json
-    ├── background.js
-    └── content.js
-```
-
-## Files
-
-- `src/manifest.json`: extension manifest and permissions
-- `src/background.js`: service worker that validates and proxies local requests
-- `src/content.js`: content script that relays `window.postMessage` traffic
-- `examples/remote.html`: a complete UE5 Remote API demo page that uses the bridge protocol
-- `dist/unreal-engine-bridge.zip`: packaged extension for distribution
+- Includes a full example page in `examples/index.html`
+- Includes a packaged release artifact in `examples/unreal-engine-bridge.zip`
 
 ## Installation
 
@@ -59,7 +36,7 @@ Browsers do not allow remote websites to directly call your local Unreal Engine 
 
 ### Install from zip
 
-1. Unzip `dist/unreal-engine-bridge.zip`
+1. Unzip `examples/unreal-engine-bridge.zip`
 2. Open `chrome://extensions`
 3. Enable **Developer mode**
 4. Click **Load unpacked**
@@ -67,7 +44,9 @@ Browsers do not allow remote websites to directly call your local Unreal Engine 
 
 ## Unreal Engine requirements
 
-Make sure Unreal Engine exposes the Remote Control HTTP API locally:
+Before using the bridge, enable the **Remote Control API** plugin in Unreal Engine.
+
+Then make sure Unreal Engine exposes the Remote Control HTTP API locally:
 
 - Base URL: `http://127.0.0.1:30010`
 - Protocol: HTTP
@@ -100,7 +79,7 @@ bThrottleCPUWhenNotForeground=False
 These settings are important because:
 
 - `bRestrictServerAccess=True` keeps the Remote Control server limited to local access.
-- `bEnableRemotePythonExecution=True` is required by screenshot and other Python-driven helper flows used by `examples/remote.html`.
+- `bEnableRemotePythonExecution=True` is required by screenshot and other Python-driven helper flows used by `examples/index.html`.
 - `bAllowConsoleCommandRemoteExecution=True` is only needed for flows that trigger Unreal console commands, such as the screenshot example that calls `HighResShot`.
 - `bThrottleCPUWhenNotForeground=False` helps avoid background-editor throttling when Chrome and Unreal are open side by side.
 
@@ -108,94 +87,18 @@ If your Unreal instance uses a different port, update both:
 
 - `src/manifest.json` host permissions
 - the validation logic in `src/background.js`
-- any calling page such as `examples/remote.html`
+- any calling page such as `examples/index.html`
 
 ## Quick start
 
 1. Start Unreal Engine with Remote Control HTTP API enabled on `127.0.0.1:30010`
 2. Install the extension in Chrome
 3. Host or open an HTTP(S) page that speaks the bridge protocol
-4. Open `examples/remote.html` from a local web server or copy its bridge logic into your own tool page
+4. Open `examples/index.html` from a local web server or copy its bridge logic into your own tool page
 5. Call `UE_BRIDGE_PING` to confirm the extension is available
 6. Call `UE_LOCAL_FETCH` to proxy local requests through the extension
 
 > Important: Chrome extensions do **not** run on `file://` pages in this setup. Use an HTTP(S) page.
-
-## Bridge protocol
-
-The page and extension communicate through `window.postMessage`.
-
-### 1) Health check
-
-Send:
-
-```js
-window.postMessage({
-  source: 'UE_REMOTE_PAGE',
-  type: 'UE_BRIDGE_PING',
-  requestId: crypto.randomUUID(),
-  payload: null,
-}, '*');
-```
-
-Receive:
-
-```js
-{
-  source: 'UE_BRIDGE_EXTENSION',
-  type: 'UE_BRIDGE_PING_RESULT',
-  requestId: 'same-request-id',
-  payload: {
-    ok: true,
-    installed: true,
-    version: '0.1.0',
-    mode: 'proxy'
-  }
-}
-```
-
-### 2) Local request proxy
-
-Send:
-
-```js
-window.postMessage({
-  source: 'UE_REMOTE_PAGE',
-  type: 'UE_LOCAL_FETCH',
-  requestId: crypto.randomUUID(),
-  payload: {
-    url: 'http://127.0.0.1:30010/remote/object/call',
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      objectPath: '/Script/UnrealEd.Default__UnrealEditorSubsystem',
-      functionName: 'GetLevelViewportCameraInfo'
-    })
-  }
-}, '*');
-```
-
-Receive:
-
-```js
-{
-  source: 'UE_BRIDGE_EXTENSION',
-  type: 'UE_LOCAL_FETCH_RESULT',
-  requestId: 'same-request-id',
-  payload: {
-    ok: true,
-    status: 200,
-    statusText: 'OK',
-    headers: {
-      'content-type': 'application/json'
-    },
-    bodyText: '{"ReturnValue": ...}',
-    bodyBase64: 'eyJSZXR1cm5WYWx1ZSI6IC4uLn0='
-  }
-}
-```
 
 ## Security model
 
@@ -210,7 +113,7 @@ This prevents arbitrary cross-network proxying from remote pages.
 
 ## Example page
 
-`examples/remote.html` is copied from the original integration and contains:
+`examples/index.html` is the hosted example page and contains:
 
 - extension install hints
 - bridge connectivity checks
@@ -239,12 +142,12 @@ After editing `src/manifest.json`, `src/background.js`, or `src/content.js`:
 From the repository root:
 
 ```bash
-mkdir -p dist
-rm -f dist/unreal-engine-bridge.zip
+mkdir -p examples
+rm -f examples/unreal-engine-bridge.zip
 tmpdir=$(mktemp -d)
 mkdir -p "$tmpdir/unreal-engine-bridge"
 cp src/manifest.json src/background.js src/content.js "$tmpdir/unreal-engine-bridge/"
-(cd "$tmpdir" && zip -rq /path/to/this/repo/dist/unreal-engine-bridge.zip unreal-engine-bridge)
+(cd "$tmpdir" && zip -rq /path/to/this/repo/examples/unreal-engine-bridge.zip unreal-engine-bridge)
 rm -rf "$tmpdir"
 ```
 
@@ -255,7 +158,7 @@ This keeps the repository source under `src/` while producing a release zip whos
 - Update `src/manifest.json` version
 - Reload the extension locally and verify `UE_BRIDGE_PING`
 - Verify at least one `UE_LOCAL_FETCH` request succeeds against UE5
-- Rebuild `dist/unreal-engine-bridge.zip`
+- Rebuild `examples/unreal-engine-bridge.zip`
 - Update this `README.md` if the protocol or permissions change
 - Commit and tag the release in Git
 

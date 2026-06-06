@@ -133,22 +133,22 @@
         </div>
         <div class="tool-intro">
             <div class="action-row">
-                <a id="extensionDownloadLink" class="download-link" href="/unreal-engine-bridge.zip" download>Download Unreal Engine Bridge (.zip)</a>
+                <a id="extensionDownloadLink" class="download-link" href="./unreal-engine-bridge.zip" download>Download Unreal Engine Bridge (.zip)</a>
                 <button type="button" onclick="refreshBridgeStatus()">Check Extension Connection</button>
             </div>
             <div id="extensionDownloadFallback" class="hint info" hidden>
-                Download links are only available when this page is served over HTTP(S). If you opened <code>remote.html</code> as a local file, go back to the hosted <code>/remote.html</code> page to download the extension package.
+                Download links are only available when this page is served over HTTP(S). If you opened <code>index.html</code> as a local file, go back to the hosted <code>/examples/</code> page to download the extension package.
             </div>
             <div id="bridgeStatus" class="hint info">Checking extension status...</div>
             <ol class="install-steps">
                 <li>Download and unzip <code>Unreal Engine Bridge</code>.</li>
                 <li>Open <code>chrome://extensions</code> and enable <strong>Developer mode</strong>.</li>
                 <li>Click <strong>Load unpacked</strong> and select the extracted extension folder.</li>
-                <li>Open any hosted HTTP(S) web tool that implements this bridge protocol in Chrome; <code>/remote.html</code> is just one example page.</li>
+                <li>Open any hosted HTTP(S) web tool that implements this bridge protocol in Chrome; <code>/examples/index.html</code> is one example page.</li>
                 <li>Return to this page, click <strong>Check Extension Connection</strong>, then use <strong>Take Screenshot</strong>.</li>
             </ol>
             <div class="hint info">
-                All UE debug tools on this page are now proxied through the extension, so both remote domains and hosted <code>remote.html</code> can call your local <code>localhost:30010</code> API through the same bridge.
+                All UE debug tools on this page are now proxied through the extension, so both remote domains and hosted <code>/examples/index.html</code> can call your local <code>localhost:30010</code> API through the same bridge.
             </div>
         </div>
     </div>
