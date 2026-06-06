@@ -11,17 +11,22 @@ Browsers do not allow remote websites to directly call your local Unreal Engine 
 3. proxying approved local HTTP requests to Unreal Engine, and
 4. returning the response back to the page.
 
+## Examples
+
+The hosted demo page is available at [GitHub Pages](https://xoyojank.github.io/UnrealEngineBridge/).
+
+- **Page**: `examples/index.html`
+- **Package**: `examples/unreal-engine-bridge.zip`
+- **Use cases**: manual QA, bridge verification, and a starting point for your own hosted Unreal tools
+
 ## Features
 
-- Chrome extension built with Manifest V3
-- Source files are organized under `src/`
-- Supports bridge health checks through `UE_BRIDGE_PING`
-- Supports proxied local HTTP requests through `UE_LOCAL_FETCH`
-- Restricts requests to local HTTP hosts only
-- Restricts requests to port `30010` on `127.0.0.1` / `localhost`
-- Returns both text and base64 payloads so pages can render JSON or binary responses such as images
-- Includes a full example page in `examples/index.html`
-- Includes a packaged release artifact in `examples/unreal-engine-bridge.zip`
+- Bypass browser CORS and Private Network Access (PNA) restrictions when accessing the UE5 Remote Control API from a web page
+- Call Unreal Engine Blueprint-exposed functions and Console Commands from a web page
+- Run Unreal Engine Python scripts from a web page for automation, tooling, and content workflows
+- Combine the fast iteration speed of web tools with Unreal Engine's powerful game creation capabilities
+- Get started quickly with the hosted demo page in `examples/index.html` and the extension package in `examples/unreal-engine-bridge.zip`
+- Learn more advanced Remote Control workflows in the [official Unreal Engine documentation](https://dev.epicgames.com/documentation/unreal-engine/remote-control-for-unreal-engine)
 
 ## Installation
 
@@ -110,21 +115,6 @@ If your Unreal instance uses a different port, update both:
 - unsupported message types are rejected
 
 This prevents arbitrary cross-network proxying from remote pages.
-
-## Example page
-
-`examples/index.html` is the hosted example page and contains:
-
-- extension install hints
-- bridge connectivity checks
-- multiple Unreal Engine Remote Control API examples
-- screenshot and asset utility examples
-
-You can use it as:
-
-- a manual QA page
-- a protocol reference
-- a starting point for your own hosted Unreal tools
 
 ## Development
 
