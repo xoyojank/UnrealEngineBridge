@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UE5 Remote API Examples</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .tool {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .tool h2 {
+            margin-top: 0;
+        }
+        .tool button {
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .tool button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+            white-space: pre-wrap;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .hint {
+            margin: 10px 0;
+            padding: 10px 12px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .hint.warning {
+            border: 1px solid #ffe08a;
+            background-color: #fff8db;
+            color: #7a5d00;
+        }
+        .hint code {
+            background: rgba(0, 0, 0, 0.06);
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+        .hint.info {
+            border: 1px solid #cfe5ff;
+            background-color: #eef6ff;
+            color: #174a7c;
+        }
+        .hint.success {
+            border: 1px solid #b7ebc6;
+            background-color: #edf9f0;
+            color: #1f6b36;
+        }
+        .hint.error {
+            border: 1px solid #ffc9c9;
+            background-color: #fff1f1;
+            color: #9f1c1c;
+        }
+        .tool-intro {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .action-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 15px;
+            border-radius: 4px;
+            background-color: #0f766e;
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .download-link:hover {
+            background-color: #0b5c56;
+        }
+        .install-steps {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .install-steps li + li {
+            margin-top: 6px;
+        }
+        #screenshotImageContainer img {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>UE5 Remote API Examples</h1>
+
+    <div class="tool">
+        <h2>Unreal Engine Bridge</h2>
+        <div class="hint warning">
+            Remote domains cannot directly access your local <code>UE5 Remote Control API</code>. All tools on this page now send their localhost requests through the Chrome bridge extension.
+        </div>
+        <div class="tool-intro">
+            <div class="action-row">
+                <a id="extensionDownloadLink" class="download-link" href="/unreal-engine-bridge.zip" download>Download Unreal Engine Bridge (.zip)</a>
+                <button type="button" onclick="refreshBridgeStatus()">Check Extension Connection</button>
+            </div>
+            <div id="extensionDownloadFallback" class="hint info" hidden>
+                Download links are only available when this page is served over HTTP(S). If you opened <code>remote.html</code> as a local file, go back to the hosted <code>/remote.html</code> page to download the extension package.
+            </div>
+            <div id="bridgeStatus" class="hint info">Checking extension status...</div>
+            <ol class="install-steps">
+                <li>Download and unzip <code>Unreal Engine Bridge</code>.</li>
+                <li>Open <code>chrome://extensions</code> and enable <strong>Developer mode</strong>.</li>
+                <li>Click <strong>Load unpacked</strong> and select the extracted extension folder.</li>
+                <li>Open any hosted HTTP(S) web tool that implements this bridge protocol in Chrome; <code>/remote.html</code> is just one example page.</li>
+                <li>Return to this page, click <strong>Check Extension Connection</strong>, then use <strong>Take Screenshot</strong>.</li>
+            </ol>
+            <div class="hint info">
+                All UE debug tools on this page are now proxied through the extension, so both remote domains and hosted <code>remote.html</code> can call your local <code>localhost:30010</code> API through the same bridge.
+            </div>
+        </div>
+    </div>
+
+    <!-- GetThumbnail Tool -->
+    <div class="tool">
+        <h2>GetThumbnail</h2>
+        <div class="form-group">
+            <label for="thumbnailObjectPath">Object Path:</label>
+            <input type="text" id="thumbnailObjectPath" value="/Engine/BasicShapes/Cube.Cube">
+        </div>
+        <button onclick="callGetThumbnail()">Send</button>
+        <div class="result" id="thumbnailResult"></div>
+    </div>
+
+    <!-- SelectAssets Tool -->
+    <div class="tool">
+        <h2>SelectAssets</h2>
+        <div class="form-group">
+            <label for="selectAssetsPaths">Asset Paths (JSON array):</label>
+            <textarea id="selectAssetsPaths">["/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin"]</textarea>
+        </div>
+        <button onclick="callSelectAssets()">Send</button>
+        <div class="result" id="selectAssetsResult"></div>
+    </div>
+
+    <!-- SetCameraInfo Tool -->
+    <div class="tool">
+        <h2>SetCameraInfo</h2>
+        <div class="form-group">
+            <label for="cameraLocation">Camera Location (JSON):</label>
+            <textarea id="cameraLocation">{"X": 806.35564583111113, "Y": 2046.8238632351899, "Z": 300.42590052039907}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="cameraRotation">Camera Rotation (JSON):</label>
+            <textarea id="cameraRotation">{"Pitch": -36.079620999999975, "Yaw": 360.52953500596044, "Roll": 0}</textarea>
+        </div>
+        <button onclick="callSetCameraInfo()">Send</button>
+        <div class="result" id="setCameraResult"></div>
+    </div>
+
+    <!-- GetCameraInfo Tool -->
+    <div class="tool">
+        <h2>GetCameraInfo</h2>
+        <button onclick="callGetCameraInfo()">Send</button>
+        <div class="result" id="getCameraResult"></div>
+    </div>
+
+    <!-- GetAllLevelActors Tool -->
+    <div class="tool">
+        <h2>GetAllLevelActors</h2>
+        <button onclick="callGetAllLevelActors()">Send</button>
+        <div class="result" id="getAllActorsResult"></div>
+    </div>
+
+    <!-- SearchAssets Tool -->
+    <div class="tool">
+        <h2>SearchAssets</h2>
+        <div class="form-group">
+            <label for="searchQuery">Query:</label>
+            <input type="text" id="searchQuery" value="Cube">
+        </div>
+        <div class="form-group">
+            <label for="searchFilter">Filter (JSON):</label>
+            <textarea id="searchFilter">{"PackageNames": [], "ClassNames": [], "PackagePaths": [], "RecursiveClassesExclusionSet": [], "RecursivePaths": false, "RecursiveClasses": false}</textarea>
+        </div>
+        <button onclick="callSearchAssets()">Send</button>
+        <div class="result" id="searchAssetsResult"></div>
+    </div>
+
+    <!-- SetActorLocation Tool -->
+    <div class="tool">
+        <h2>SetActorLocation</h2>
+        <div class="form-group">
+            <label for="actorPath">Object Path:</label>
+            <input type="text" id="actorPath" value="/Game/ThirdPerson/Maps/ThirdPersonMap.ThirdPersonMap:PersistentLevel.StaticMeshActor_11">
+        </div>
+        <div class="form-group">
+            <label for="newLocation">New Location (JSON):</label>
+            <textarea id="newLocation">{"X": 750, "Y": 1540, "Z": 50}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="bSweep">bSweep:</label>
+            <input type="checkbox" id="bSweep">
+        </div>
+        <div class="form-group">
+            <label for="generateTransaction">Generate Transaction:</label>
+            <input type="checkbox" id="generateTransaction" checked>
+        </div>
+        <button onclick="callSetActorLocation()">Send</button>
+        <div class="result" id="setActorLocationResult"></div>
+    </div>
+
+    <!-- SetLightRotation Tool -->
+    <div class="tool">
+        <h2>SetLightRotation</h2>
+        <div class="form-group">
+            <label for="lightPath">Object Path:</label>
+            <input type="text" id="lightPath" value="/Game/ThirdPerson/Maps/ThirdPersonMap.ThirdPersonMap:PersistentLevel.DirectionalLight_0.LightComponent0">
+        </div>
+        <div class="form-group">
+            <label for="newRotation">New Rotation (JSON):</label>
+            <textarea id="newRotation">{"Pitch": -60, "Yaw": -15, "Roll": 25}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="generateTransactionLight">Generate Transaction:</label>
+            <input type="checkbox" id="generateTransactionLight" checked>
+        </div>
+        <button onclick="callSetLightRotation()">Send</button>
+        <div class="result" id="setLightRotationResult"></div>
+    </div>
+
+    <!-- GetLightRotation Tool -->
+    <div class="tool">
+        <h2>GetLightRotation</h2>
+        <div class="form-group">
+            <label for="lightPathGet">Object Path:</label>
+            <input type="text" id="lightPathGet" value="/Game/ThirdPerson/Maps/ThirdPersonMap.ThirdPersonMap:PersistentLevel.DirectionalLight_0.LightComponent0">
+        </div>
+        <button onclick="callGetLightRotation()">Send</button>
+        <div class="result" id="getLightRotationResult"></div>
+    </div>
+
+    <!-- TakeScreenshot Tool -->
+    <div class="tool">
+        <h2>TakeScreenshot</h2>
+        <div class="form-group">
+            <label for="screenshotFilename">Filename (auto-generated if empty):</label>
+            <input type="text" id="screenshotFilename" placeholder="e.g. my_shot (no extension)">
+        </div>
+        <button onclick="callTakeScreenshot()" id="screenshotBtn">Take Screenshot</button>
+        <div class="result" id="screenshotStatus"></div>
+        <div id="screenshotImageContainer" style="margin-top:10px;"></div>
+    </div>
+
+    
+    <script>
+        // Helper function to display results
+        function getResultElement(elementId) {
+            return document.getElementById(elementId);
+        }
+
+        function setResultText(elementId, message = '') {
+            const resultElement = getResultElement(elementId);
+            if (!resultElement) {
+                return;
+            }
+
+            resultElement.innerHTML = '';
+            resultElement.textContent = message;
+        }
+
+        function displayResult(elementId, data) {
+            setResultText(elementId, JSON.stringify(data, null, 2));
+        }
+
+        function displayHtmlResult(elementId, html) {
+            const resultElement = getResultElement(elementId);
+            if (!resultElement) {
+                return;
+            }
+
+            resultElement.innerHTML = html;
+        }
+
+        function displayError(elementId, error, fallbackLabel = 'Request failed') {
+            const message = error instanceof Error
+                ? error.message
+                : (typeof error === 'string' && error.trim()) || fallbackLabel;
+            setResultText(elementId, message);
+        }
+
+        function parseJsonInputValue(elementId, fieldLabel) {
+            const inputElement = document.getElementById(elementId);
+            const rawValue = typeof inputElement?.value === 'string' ? inputElement.value.trim() : '';
+            if (!rawValue) {
+                throw new Error(`${fieldLabel} cannot be empty.`);
+            }
+
+            try {
+                return JSON.parse(rawValue);
+            } catch {
+                throw new Error(`${fieldLabel} must be valid JSON.`);
+            }
+        }
+
+        async function runExampleAction({ resultId, loadingMessage, errorMessage, action }) {
+            setResultText(resultId, loadingMessage);
+            try {
+                await action();
+            } catch (error) {
+                displayError(resultId, error, errorMessage);
+            }
+        }
+
+        function getBridgeHeader(result, headerName) {
+            const headers = result?.headers;
+            if (!headers || typeof headers !== 'object') {
+                return '';
+            }
+
+            const normalizedName = headerName.toLowerCase();
+            for (const [key, value] of Object.entries(headers)) {
+                if (key.toLowerCase() === normalizedName) {
+                    return String(value);
+                }
+            }
+
+            return '';
+        }
+
+        function summarizeBridgeFailure(result) {
+            const detail = typeof result?.bodyText === 'string' ? result.bodyText.trim() : '';
+            if (!detail) {
+                return '';
+            }
+
+            return detail.length > 220 ? `${detail.slice(0, 217)}...` : detail;
+        }
+
+        function ensureBridgeSuccess(result, fallbackLabel = 'UE request') {
+            if (result?.status >= 200 && result?.status < 300) {
+                return;
+            }
+
+            const summary = summarizeBridgeFailure(result);
+            throw new Error(`${fallbackLabel} failed: ${result?.status || 'unknown'}${summary ? ` ${summary}` : ''}`);
+        }
+
+        function parseBridgeJsonResponse(result, fallbackLabel = 'UE request') {
+            ensureBridgeSuccess(result, fallbackLabel);
+
+            try {
+                return JSON.parse(result.bodyText || '{}');
+            } catch {
+                throw new Error(`${fallbackLabel} returned invalid JSON.`);
+            }
+        }
+
+        async function bridgePutRequest(pathname, payload, timeoutMs = BRIDGE_REQUEST_TIMEOUT_MS) {
+            return bridgeLocalFetch({
+                url: new URL(pathname, LOCAL_UE_BASE_URL).toString(),
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+                timeoutMs,
+            });
+        }
+
+        async function bridgePutJsonRequest(pathname, payload, fallbackLabel) {
+            const result = await bridgePutRequest(pathname, payload);
+            return parseBridgeJsonResponse(result, fallbackLabel);
+        }
+
+        // GetThumbnail
+        async function callGetThumbnail() {
+            await runExampleAction({
+                resultId: 'thumbnailResult',
+                loadingMessage: 'Loading thumbnail...',
+                errorMessage: 'GetThumbnail failed. Please verify the asset object path and try again.',
+                action: async () => {
+                    const objectPath = document.getElementById('thumbnailObjectPath').value.trim();
+                    if (!objectPath) {
+                        throw new Error('Please enter an asset object path before requesting a thumbnail.');
+                    }
+
+                    const result = await bridgePutRequest('/remote/object/thumbnail', {
+                        objectPath,
+                    });
+
+                    const contentType = getBridgeHeader(result, 'content-type');
+                    if (contentType && contentType.startsWith('image/')) {
+                        displayHtmlResult('thumbnailResult', `<img src="data:${contentType};base64,${result.bodyBase64}" alt="Thumbnail" />`);
+                        return;
+                    }
+
+                    const data = parseBridgeJsonResponse(result, 'GetThumbnail');
+                    displayResult('thumbnailResult', data);
+                },
+            });
+        }
+
+        // SelectAssets
+        async function callSelectAssets() {
+            await runExampleAction({
+                resultId: 'selectAssetsResult',
+                loadingMessage: 'Selecting assets...',
+                errorMessage: 'SelectAssets failed.',
+                action: async () => {
+                    const assetPaths = parseJsonInputValue('selectAssetsPaths', 'Asset Paths');
+                    const data = await bridgePutJsonRequest('/remote/object/call', {
+                        objectPath: '/Script/EditorScriptingUtilities.Default__EditorAssetLibrary',
+                        functionName: 'SyncBrowserToObjects',
+                        parameters: {
+                            AssetPaths: assetPaths,
+                        },
+                    }, 'SelectAssets');
+                    displayResult('selectAssetsResult', data);
+                },
+            });
+        }
+
+        // SetCameraInfo
+        async function callSetCameraInfo() {
+            await runExampleAction({
+                resultId: 'setCameraResult',
+                loadingMessage: 'Updating camera info...',
+                errorMessage: 'SetCameraInfo failed.',
+                action: async () => {
+                    const cameraLocation = parseJsonInputValue('cameraLocation', 'Camera Location');
+                    const cameraRotation = parseJsonInputValue('cameraRotation', 'Camera Rotation');
+                    const data = await bridgePutJsonRequest('/remote/object/call', {
+                        objectPath: '/Script/UnrealEd.Default__UnrealEditorSubsystem',
+                        functionName: 'SetLevelViewportCameraInfo',
+                        parameters: {
+                            CameraLocation: cameraLocation,
+                            CameraRotation: cameraRotation,
+                        },
+                    }, 'SetCameraInfo');
+                    displayResult('setCameraResult', data);
+                },
+            });
+        }
+
+        // GetCameraInfo
+        async function callGetCameraInfo() {
+            await runExampleAction({
+                resultId: 'getCameraResult',
+                loadingMessage: 'Loading camera info...',
+                errorMessage: 'GetCameraInfo failed.',
+                action: async () => {
+                    const data = await bridgePutJsonRequest('/remote/object/call', {
+                        objectPath: '/Script/UnrealEd.Default__UnrealEditorSubsystem',
+                        functionName: 'GetLevelViewportCameraInfo',
+                    }, 'GetCameraInfo');
+                    displayResult('getCameraResult', data);
+                },
+            });
+        }
+
+        // GetAllLevelActors
+        async function callGetAllLevelActors() {
+            await runExampleAction({
+                resultId: 'getAllActorsResult',
+                loadingMessage: 'Loading level actors...',
+                errorMessage: 'GetAllLevelActors failed.',
+                action: async () => {
+                    const data = await bridgePutJsonRequest('/remote/object/call', {
+                        objectPath: '/Script/UnrealEd.Default__EditorActorSubsystem',
+                        functionName: 'GetAllLevelActors',
+                    }, 'GetAllLevelActors');
+                    displayResult('getAllActorsResult', data);
+                },
+            });
+        }
+
+        // SearchAssets
+        async function callSearchAssets() {
+            await runExampleAction({
+                resultId: 'searchAssetsResult',
+                loadingMessage: 'Searching assets...',
+                errorMessage: 'SearchAssets failed.',
+                action: async () => {
+                    const query = document.getElementById('searchQuery').value.trim();
+                    const filter = parseJsonInputValue('searchFilter', 'Filter');
+                    const data = await bridgePutJsonRequest('/remote/search/assets', {
+                        Query: query,
+                        Filter: filter,
+                    }, 'SearchAssets');
+                    displayResult('searchAssetsResult', data);
+                },
+            });
+        }
+
+        // SetActorLocation
+        async function callSetActorLocation() {
+            await runExampleAction({
+                resultId: 'setActorLocationResult',
+                loadingMessage: 'Updating actor location...',
+                errorMessage: 'SetActorLocation failed.',
+                action: async () => {
+                    const objectPath = document.getElementById('actorPath').value.trim();
+                    if (!objectPath) {
+                        throw new Error('Object Path cannot be empty.');
+                    }
+
+                    const newLocation = parseJsonInputValue('newLocation', 'New Location');
+                    const bSweep = document.getElementById('bSweep').checked;
+                    const generateTransaction = document.getElementById('generateTransaction').checked;
+                    const data = await bridgePutJsonRequest('/remote/object/call', {
+                        objectPath,
+                        functionName: 'SetActorLocation',
+                        parameters: {
+                            NewLocation: newLocation,
+                            bSweep,
+                        },
+                        generateTransaction,
+                    }, 'SetActorLocation');
+                    displayResult('setActorLocationResult', data);
+                },
+            });
+        }
+
+        // SetLightRotation
+        async function callSetLightRotation() {
+            await runExampleAction({
+                resultId: 'setLightRotationResult',
+                loadingMessage: 'Updating light rotation...',
+                errorMessage: 'SetLightRotation failed.',
+                action: async () => {
+                    const objectPath = document.getElementById('lightPath').value.trim();
+                    if (!objectPath) {
+                        throw new Error('Object Path cannot be empty.');
+                    }
+
+                    const newRotation = parseJsonInputValue('newRotation', 'New Rotation');
+                    const generateTransaction = document.getElementById('generateTransactionLight').checked;
+                    const data = await bridgePutJsonRequest('/remote/object/call', {
+                        objectPath,
+                        functionName: 'SetRelativeRotation',
+                        parameters: {
+                            NewRotation: newRotation,
+                        },
+                        generateTransaction,
+                    }, 'SetLightRotation');
+                    displayResult('setLightRotationResult', data);
+                },
+            });
+        }
+
+        // GetLightRotation
+        async function callGetLightRotation() {
+            await runExampleAction({
+                resultId: 'getLightRotationResult',
+                loadingMessage: 'Loading light rotation...',
+                errorMessage: 'GetLightRotation failed.',
+                action: async () => {
+                    const objectPath = document.getElementById('lightPathGet').value.trim();
+                    if (!objectPath) {
+                        throw new Error('Object Path cannot be empty.');
+                    }
+
+                    const data = await bridgePutJsonRequest('/remote/object/property', {
+                        objectPath,
+                        access: 'READ_ACCESS',
+                        propertyName: 'RelativeRotation',
+                    }, 'GetLightRotation');
+                    displayResult('getLightRotationResult', data);
+                },
+            });
+        }
+
+        // --- TakeScreenshot (API logic stays in page, extension only proxies localhost requests) ---
+        const BRIDGE_REQUEST_SOURCE = 'UE_REMOTE_PAGE';
+        const BRIDGE_RESPONSE_SOURCE = 'UE_BRIDGE_EXTENSION';
+        const BRIDGE_REQUEST_TIMEOUT_MS = 45000;
+        const EXTENSION_DOWNLOAD_FILE_NAME = 'unreal-engine-bridge.zip';
+        const LOCAL_UE_BASE_URL = 'http://127.0.0.1:30010';
+        const UNREAL_REMOTE_HTTP_URL = `${LOCAL_UE_BASE_URL}/remote/object/call`;
+        const PYTHON_SCRIPT_LIBRARY_OBJECT_PATH = '/Script/PythonScriptPlugin.Default__PythonScriptLibrary';
+        const MAX_POLL_ATTEMPTS = 20;
+        const POLL_INTERVAL_MS = 1000;
+        const PYTHON_EXECUTION_MODE_EXECUTE_FILE = 0;
+        const PYTHON_EXECUTION_MODE_EXECUTE_STATEMENT = 1;
+        const PYTHON_EXECUTION_MODE_EVALUATE_STATEMENT = 2;
+        const PYTHON_FILE_EXECUTION_SCOPE_PRIVATE = 'Private';
+
+        // Generate a timestamp-based filename: capture_YYYYMMDD_HHmmss_mmm
+        function generateScreenshotFilename() {
+            const now = new Date();
+            const pad = (n, len = 2) => String(n).padStart(len, '0');
+            return `capture_${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}_${pad(now.getMilliseconds(), 3)}`;
+        }
+
+        function sleep(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        function isRecord(value) {
+            return typeof value === 'object' && value !== null;
+        }
+
+        function parseJsonIfNeeded(value) {
+            if (typeof value !== 'string') {
+                return value;
+            }
+
+            try {
+                return JSON.parse(value);
+            } catch {
+                return value;
+            }
+        }
+
+        function extractStatusCode(payload, fallbackStatus = 200) {
+            const parameters = isRecord(payload?.Parameters) ? payload.Parameters : null;
+            const candidates = [
+                parameters?.ResponseCode,
+                payload?.ResponseCode,
+                parameters?.StatusCode,
+                payload?.StatusCode,
+                parameters?.status,
+                payload?.status,
+                parameters?.code,
+                payload?.code,
+            ];
+
+            for (const candidate of candidates) {
+                if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+                    return candidate;
+                }
+                if (typeof candidate === 'string' && /^\d+$/.test(candidate.trim())) {
+                    return Number(candidate.trim());
+                }
+            }
+
+            return fallbackStatus;
+        }
+
+        function extractNestedExecuteResponse(value, depth = 0) {
+            if (depth > 5) {
+                return null;
+            }
+
+            const parsedValue = parseJsonIfNeeded(value);
+            if (!isRecord(parsedValue)) {
+                return null;
+            }
+
+            const nestedKeys = ['ResponseBody', 'responseBody', 'Body', 'body', 'response', 'result', 'data', 'Parameters'];
+            for (const key of nestedKeys) {
+                if (key in parsedValue) {
+                    const nested = extractNestedExecuteResponse(parsedValue[key], depth + 1);
+                    if (nested) {
+                        return nested;
+                    }
+                }
+            }
+
+            if ('CommandResult' in parsedValue || 'LogOutput' in parsedValue) {
+                return parsedValue;
+            }
+
+            if ('ReturnValue' in parsedValue) {
+                return parsedValue;
+            }
+
+            return null;
+        }
+
+        function extractErrorMessage(value, depth = 0) {
+            if (depth > 3) {
+                return '';
+            }
+
+            const parsedValue = parseJsonIfNeeded(value);
+            if (!isRecord(parsedValue)) {
+                return typeof parsedValue === 'string' ? parsedValue.trim() : '';
+            }
+
+            const directKeys = ['ErrorMessage', 'errorMessage', 'error', 'message', 'Message', 'Reason', 'reason'];
+            for (const key of directKeys) {
+                const candidate = parsedValue[key];
+                if (typeof candidate === 'string' && candidate.trim()) {
+                    return candidate.trim();
+                }
+            }
+
+            const nestedKeys = ['ResponseBody', 'responseBody', 'Body', 'body', 'response', 'result', 'data', 'Parameters'];
+            for (const key of nestedKeys) {
+                if (key in parsedValue) {
+                    const nested = extractErrorMessage(parsedValue[key], depth + 1);
+                    if (nested) {
+                        return nested;
+                    }
+                }
+            }
+
+            return '';
+        }
+
+        function normalizeExecutePythonResponse(payload, fallbackStatus = 200) {
+            if (!isRecord(payload)) {
+                return null;
+            }
+
+            const status = extractStatusCode(payload, fallbackStatus);
+            const body = extractNestedExecuteResponse(payload);
+            const errorMessage = extractErrorMessage(payload);
+
+            if (!body && status === fallbackStatus && !errorMessage) {
+                return null;
+            }
+
+            return {
+                status,
+                body,
+                errorMessage,
+            };
+        }
+
+        function extractLogLines(logOutput) {
+            if (!Array.isArray(logOutput)) {
+                return [];
+            }
+
+            return logOutput
+                .map((entry) => {
+                    if (typeof entry === 'string') {
+                        return entry;
+                    }
+                    if (entry && typeof entry === 'object') {
+                        if (typeof entry.Output === 'string') {
+                            return entry.Output;
+                        }
+                        if (typeof entry.output === 'string') {
+                            return entry.output;
+                        }
+                    }
+                    return '';
+                })
+                .filter((line) => typeof line === 'string' && line.trim().length > 0);
+        }
+
+        function summarizeCommandFailure(payload) {
+            const detailCandidates = [
+                payload?.CommandResult,
+                ...extractLogLines(payload?.LogOutput),
+            ]
+                .map((value) => value?.trim())
+                .filter(Boolean);
+
+            if (detailCandidates.length === 0) {
+                return '';
+            }
+
+            const summary = detailCandidates.join(' | ');
+            return summary.length > 220 ? `${summary.slice(0, 217)}...` : summary;
+        }
+
+        function setBridgeStatus(message, tone = 'info') {
+            const statusElement = document.getElementById('bridgeStatus');
+            if (!statusElement) {
+                return;
+            }
+
+            statusElement.className = `hint ${tone}`;
+            statusElement.textContent = message;
+        }
+
+        function configureExtensionDownloadLink() {
+            const linkElement = document.getElementById('extensionDownloadLink');
+            const fallbackElement = document.getElementById('extensionDownloadFallback');
+            const isHostedPage = window.location.protocol === 'http:' || window.location.protocol === 'https:';
+
+            if (!linkElement || !fallbackElement) {
+                return;
+            }
+
+            if (isHostedPage) {
+                linkElement.href = new URL(`/${EXTENSION_DOWNLOAD_FILE_NAME}`, window.location.origin).toString();
+                linkElement.hidden = false;
+                fallbackElement.hidden = true;
+            } else {
+                linkElement.hidden = true;
+                fallbackElement.hidden = false;
+            }
+        }
+
+        function requestExtensionBridge(type, payload = null, timeoutMs = BRIDGE_REQUEST_TIMEOUT_MS) {
+            return new Promise((resolve, reject) => {
+                const requestId = typeof crypto?.randomUUID === 'function'
+                    ? crypto.randomUUID()
+                    : `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+                const responseType = `${type}_RESULT`;
+
+                const cleanup = () => {
+                    window.clearTimeout(timerId);
+                    window.removeEventListener('message', handleMessage);
+                };
+
+                const handleMessage = (event) => {
+                    if (event.source !== window) {
+                        return;
+                    }
+
+                    const data = event.data;
+                    if (!data || data.source !== BRIDGE_RESPONSE_SOURCE || data.type !== responseType || data.requestId !== requestId) {
+                        return;
+                    }
+
+                    cleanup();
+                    resolve(data.payload ?? null);
+                };
+
+                const timerId = window.setTimeout(() => {
+                    cleanup();
+                    reject(new Error('Timed out waiting for the Chrome extension response.'));
+                }, timeoutMs);
+
+                window.addEventListener('message', handleMessage);
+                window.postMessage({
+                    source: BRIDGE_REQUEST_SOURCE,
+                    type,
+                    requestId,
+                    payload,
+                }, '*');
+            });
+        }
+
+        async function bridgeLocalFetch({ url, method = 'GET', headers = {}, body, timeoutMs = BRIDGE_REQUEST_TIMEOUT_MS }) {
+            const result = await requestExtensionBridge('UE_LOCAL_FETCH', {
+                url,
+                method,
+                headers,
+                body,
+            }, timeoutMs);
+
+            if (!result?.ok) {
+                throw new Error(result?.error || 'The Chrome extension did not return a local fetch result.');
+            }
+
+            return result;
+        }
+
+        function getPythonExecutionModeName(executionMode) {
+            switch (executionMode) {
+                case PYTHON_EXECUTION_MODE_EXECUTE_FILE:
+                    return 'ExecuteFile';
+                case PYTHON_EXECUTION_MODE_EXECUTE_STATEMENT:
+                    return 'ExecuteStatement';
+                case PYTHON_EXECUTION_MODE_EVALUATE_STATEMENT:
+                    return 'EvaluateStatement';
+                default:
+                    return typeof executionMode === 'string' && executionMode.trim()
+                        ? executionMode.trim()
+                        : 'ExecuteStatement';
+            }
+        }
+
+        function buildExecutePythonRequestBody(pythonCommand, executionMode) {
+            return {
+                objectPath: PYTHON_SCRIPT_LIBRARY_OBJECT_PATH,
+                functionName: 'ExecutePythonCommandEx',
+                parameters: {
+                    PythonCommand: pythonCommand,
+                    ExecutionMode: getPythonExecutionModeName(executionMode),
+                    FileExecutionScope: PYTHON_FILE_EXECUTION_SCOPE_PRIVATE,
+                },
+            };
+        }
+
+        async function executePythonEx(
+            pythonCommand,
+            executionMode = PYTHON_EXECUTION_MODE_EXECUTE_STATEMENT,
+            options = {}
+        ) {
+            let response;
+            try {
+                response = await bridgeLocalFetch({
+                    url: UNREAL_REMOTE_HTTP_URL,
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(buildExecutePythonRequestBody(pythonCommand, executionMode)),
+                    timeoutMs: 60000,
+                });
+            } catch {
+                throw new Error(`Unable to connect to UE5 Remote Control HTTP API at ${UNREAL_REMOTE_HTTP_URL}. Make sure UE5, Remote Control API, and Remote Python Execution are enabled.`);
+            }
+
+            let parsed;
+            try {
+                parsed = JSON.parse(response.bodyText);
+            } catch {
+                throw new Error('UE5 HTTP API returned an invalid response.');
+            }
+
+            const normalized = normalizeExecutePythonResponse(parsed, response.status);
+
+            if (response.status < 200 || response.status >= 300) {
+                throw new Error(normalized?.errorMessage || `UE5 Remote Control HTTP request failed: ${response.status}`);
+            }
+
+            if (!normalized || !normalized.body) {
+                throw new Error('UE5 HTTP API returned an invalid response.');
+            }
+
+            if (normalized.body.ReturnValue === false) {
+                const details = summarizeCommandFailure(normalized.body);
+                throw new Error(`UE5 screenshot command failed${details ? `: ${details}` : ''}`);
+            }
+
+            return normalized.body;
+        }
+
+        function stripMatchingQuotes(value) {
+            let normalized = typeof value === 'string' ? value.trim() : '';
+            while (normalized.length >= 2) {
+                const firstChar = normalized[0];
+                const lastChar = normalized[normalized.length - 1];
+                if ((firstChar === '"' || firstChar === "'" || firstChar === '`') && firstChar === lastChar) {
+                    normalized = normalized.slice(1, -1).trim();
+                    continue;
+                }
+                break;
+            }
+            return normalized;
+        }
+
+        function tryParseJsonValue(value) {
+            if (typeof value !== 'string' || !value.trim()) {
+                return null;
+            }
+
+            try {
+                return JSON.parse(value);
+            } catch {
+                return null;
+            }
+        }
+
+        function looksLikeScreenshotPayload(value) {
+            return isRecord(value) && (
+                'ready' in value
+                || 'path' in value
+                || 'contentType' in value
+                || 'base64' in value
+                || 'error' in value
+            );
+        }
+
+        function parseScreenshotPayloadCandidate(rawValue) {
+            if (looksLikeScreenshotPayload(rawValue)) {
+                return rawValue;
+            }
+
+            if (typeof rawValue !== 'string' || !rawValue.trim()) {
+                return null;
+            }
+
+            for (const candidate of [rawValue, stripMatchingQuotes(rawValue)]) {
+                if (!candidate || !candidate.trim()) {
+                    continue;
+                }
+
+                const parsedValue = tryParseJsonValue(candidate);
+                if (looksLikeScreenshotPayload(parsedValue)) {
+                    return parsedValue;
+                }
+
+                if (typeof parsedValue === 'string') {
+                    const nestedValue = tryParseJsonValue(stripMatchingQuotes(parsedValue));
+                    if (looksLikeScreenshotPayload(nestedValue)) {
+                        return nestedValue;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        function summarizeDiagnosticValue(value, maxLength = 320) {
+            if (value == null) {
+                return '';
+            }
+
+            if (typeof value === 'string') {
+                const normalized = stripMatchingQuotes(value);
+                return normalized.length > maxLength
+                    ? `${normalized.slice(0, maxLength - 20)}... [len=${normalized.length}]`
+                    : normalized;
+            }
+
+            try {
+                const serialized = JSON.stringify(value, (key, currentValue) => {
+                    if (typeof currentValue === 'string') {
+                        const lowerKey = typeof key === 'string' ? key.toLowerCase() : '';
+                        if (lowerKey === 'base64') {
+                            return `[base64 length=${currentValue.length}]`;
+                        }
+
+                        return currentValue.length > 160
+                            ? `${currentValue.slice(0, 157)}...`
+                            : currentValue;
+                    }
+
+                    return currentValue;
+                }, 2);
+
+                if (!serialized) {
+                    return '';
+                }
+
+                return serialized.length > maxLength
+                    ? `${serialized.slice(0, maxLength - 20)}... [len=${serialized.length}]`
+                    : serialized;
+            } catch {
+                const fallback = String(value);
+                return fallback.length > maxLength
+                    ? `${fallback.slice(0, maxLength - 20)}... [len=${fallback.length}]`
+                    : fallback;
+            }
+        }
+
+        function parseScreenshotPayload(commandResult, fallbackLabel = 'ReadScreenshotPayload') {
+            const payload = parseScreenshotPayloadCandidate(commandResult?.CommandResult)
+                || parseScreenshotPayloadCandidate(commandResult);
+            if (payload) {
+                return payload;
+            }
+
+            const commandResultText = typeof commandResult?.CommandResult === 'string'
+                ? stripMatchingQuotes(commandResult.CommandResult).trim()
+                : '';
+            if (commandResultText.toLowerCase() === 'none' && commandResult?.ReturnValue === true) {
+                throw new Error(`${fallbackLabel} returned CommandResult=None. UE likely executed the call outside EvaluateStatement mode, so no payload was produced.`);
+            }
+
+            const responseSummary = summarizeDiagnosticValue(commandResult);
+            throw new Error(`${fallbackLabel} did not return a valid screenshot payload.${responseSummary ? ` Response: ${responseSummary}` : ''}`);
+        }
+
+        function buildScreenshotBootstrapCommand(filename) {
+            return [
+                'import os',
+                'import glob',
+                'import builtins',
+                'import base64',
+                'import unreal',
+                '',
+                'def _make_screenshot_payload(ready=False, path="", content_type="", base64_data="", error=""):',
+                '    return {',
+                '        "ready": ready,',
+                '        "path": path,',
+                '        "contentType": content_type,',
+                '        "base64": base64_data,',
+                '        "error": error,',
+                '    }',
+                '',
+                'def _ue5_read_screenshot_payload():',
+                '    try:',
+                '        name = getattr(builtins, "_ue5_shot_name", "")',
+                '        root = getattr(builtins, "_ue5_shot_root", "")',
+                '        matches = glob.glob(os.path.join(root, "**", name), recursive=True) if name and root else []',
+                '        path = matches[0] if matches else ""',
+                '        normalized_path = path.replace(os.sep, "/") if path else ""',
+                '        if not path or not os.path.exists(path):',
+                '            return _make_screenshot_payload(path=normalized_path)',
+                '        with open(path, "rb") as screenshot_file:',
+                '            encoded = base64.b64encode(screenshot_file.read()).decode("ascii")',
+                '        ext = os.path.splitext(path)[1].lower()',
+                '        content_type = {',
+                '            ".png": "image/png",',
+                '            ".jpg": "image/jpeg",',
+                '            ".jpeg": "image/jpeg",',
+                '            ".webp": "image/webp",',
+                '            ".gif": "image/gif",',
+                '            ".bmp": "image/bmp",',
+                '        }.get(ext, "application/octet-stream")',
+                '        return _make_screenshot_payload(ready=True, path=normalized_path, content_type=content_type, base64_data=encoded)',
+                '    except Exception as exc:',
+                '        return _make_screenshot_payload(error=str(exc))',
+                '',
+                `builtins._ue5_shot_name = ${JSON.stringify(filename)}`,
+                'builtins._ue5_shot_root = os.path.join(unreal.SystemLibrary.get_project_saved_directory(), "Screenshots")',
+                'builtins._ue5_read_screenshot_payload = _ue5_read_screenshot_payload',
+                'unreal.SystemLibrary.execute_console_command(None, f\'HighResShot 1 filename="{builtins._ue5_shot_name}"\')',
+            ].join('\n');
+        }
+
+        function buildScreenshotReadCommand() {
+            return [
+                '__import__("json").dumps(',
+                '    getattr(',
+                '        __import__("builtins"),',
+                '        "_ue5_read_screenshot_payload",',
+                '        lambda: {',
+                '            "ready": False,',
+                '            "path": "",',
+                '            "contentType": "",',
+                '            "base64": "",',
+                '            "error": "Screenshot helper is not initialized."',
+                '        }',
+                '    )(),',
+                '    ensure_ascii=True',
+                ')',
+            ].join('');
+        }
+
+        async function refreshBridgeStatus() {
+            setBridgeStatus('Checking Chrome extension bridge...', 'info');
+
+            try {
+                const result = await requestExtensionBridge('UE_BRIDGE_PING', null, 4000);
+                if (!result?.ok) {
+                    throw new Error(result?.error || 'Extension bridge is not ready.');
+                }
+
+                setBridgeStatus(
+                    `Connected to Unreal Engine Bridge v${result.version || 'unknown'} in ${result.mode || 'proxy'} mode. Any compatible HTTP(S) web tool on this page can now proxy localhost requests through the extension.`,
+                    'success'
+                );
+            } catch (error) {
+                const baseMessage = window.location.protocol === 'file:'
+                    ? 'Extension is not available on local file pages. Open a hosted HTTP(S) web tool page in Chrome after installing the extension.'
+                    : 'Extension not detected. Install the extension below, then refresh this page.';
+                const details = error?.message ? `\n\nDetails: ${error.message}` : '';
+                setBridgeStatus(`${baseMessage}${details}`, 'warning');
+            }
+        }
+
+        function renderScreenshotPreview(dataUrl) {
+            const imgContainer = document.getElementById('screenshotImageContainer');
+            if (!imgContainer) {
+                return;
+            }
+
+            imgContainer.innerHTML = dataUrl
+                ? `<img src="${dataUrl}" alt="Screenshot" />`
+                : '';
+        }
+
+        async function callTakeScreenshot() {
+            const userFilename = document.getElementById('screenshotFilename').value.trim();
+            const filenameNoExt = userFilename || generateScreenshotFilename();
+            const fname = `${filenameNoExt}.png`;
+
+            const statusEl = document.getElementById('screenshotStatus');
+            const btn = document.getElementById('screenshotBtn');
+
+            btn.disabled = true;
+            renderScreenshotPreview('');
+            statusEl.textContent = `Triggering screenshot through extension proxy: ${fname} ...`;
+
+            try {
+                const screenshotRoot = 'UE Saved/Screenshots';
+                const triggerCommand = buildScreenshotBootstrapCommand(fname);
+                await executePythonEx(triggerCommand, PYTHON_EXECUTION_MODE_EXECUTE_FILE);
+
+                statusEl.textContent = `Screenshot triggered.\nWaiting for file under: ${screenshotRoot}`;
+
+                let screenshotPath = '';
+                let screenshotDataUrl = '';
+                for (let i = 0; i < MAX_POLL_ATTEMPTS; i += 1) {
+                    await sleep(POLL_INTERVAL_MS);
+                    statusEl.textContent = `Waiting for screenshot... (${i + 1}s)\n${screenshotPath || screenshotRoot || fname}`;
+
+                    const readResult = await executePythonEx(
+                        buildScreenshotReadCommand(),
+                        PYTHON_EXECUTION_MODE_EVALUATE_STATEMENT
+                    );
+                    const payload = parseScreenshotPayload(readResult, 'ReadScreenshotPayload');
+
+                    if (payload?.error) {
+                        throw new Error(`UE screenshot bridge failed: ${payload.error}`);
+                    }
+
+                    if (typeof payload?.path === 'string' && payload.path.trim()) {
+                        screenshotPath = payload.path.trim();
+                    }
+
+                    if (!payload?.ready) {
+                        continue;
+                    }
+
+                    const contentType = typeof payload?.contentType === 'string' && payload.contentType.trim()
+                        ? payload.contentType.trim()
+                        : 'image/png';
+                    if (!contentType.startsWith('image/')) {
+                        throw new Error(`Screenshot payload returned unsupported content type: ${contentType}`);
+                    }
+
+                    const base64 = typeof payload?.base64 === 'string' ? payload.base64.trim() : '';
+                    if (!base64) {
+                        throw new Error('Screenshot payload is ready but does not contain base64 data.');
+                    }
+
+                    screenshotDataUrl = `data:${contentType};base64,${base64}`;
+                    break;
+                }
+
+                if (!screenshotDataUrl) {
+                    throw new Error(`Screenshot file not found after ${MAX_POLL_ATTEMPTS}s.${screenshotPath ? ` Last path: ${screenshotPath}` : ''}`);
+                }
+
+                const resolvedPath = screenshotPath || fname;
+                statusEl.textContent = `Screenshot captured through extension proxy!\nFile: ${resolvedPath}`;
+                renderScreenshotPreview(screenshotDataUrl);
+                setBridgeStatus('Bridge is working. Screenshot data is now returned from UE Python through CommandResult and proxied back to the page.', 'success');
+            } catch (err) {
+                statusEl.textContent = `Error: ${err?.message || err}`;
+                setBridgeStatus('Screenshot request failed. Check that the extension is installed and UE5 Remote Control API is reachable on localhost:30010.', 'warning');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        configureExtensionDownloadLink();
+        window.addEventListener('load', () => {
+            refreshBridgeStatus();
+        });
+
+    </script>
+</body>
+</html>
