@@ -13,7 +13,7 @@ Browsers do not allow remote websites to directly call your local Unreal Engine 
 
 ## Examples
 
-The hosted demo page is available at [GitHub Pages](https://xoyojank.github.io/UnrealEngineBridge/).
+The hosted demo page is available at [examples/index.html](https://xoyojank.github.io/UnrealEngineBridge/examples/index.html).
 
 - **Page**: `examples/index.html`
 - **Package**: `examples/unreal-engine-bridge.zip`
@@ -143,12 +143,4 @@ rm -rf "$tmpdir"
 
 This keeps the repository source under `src/` while producing a release zip whose extracted folder has `manifest.json` at the root, which is what Chrome expects.
 
-## Publishing checklist
-
-- Update `src/manifest.json` version
-- Reload the extension locally and verify `UE_BRIDGE_PING`
-- Verify at least one `UE_LOCAL_FETCH` request succeeds against UE5
-- Rebuild `examples/unreal-engine-bridge.zip`
-- Update this `README.md` if the protocol or permissions change
-- Commit and tag the release in Git
 
