@@ -17,9 +17,9 @@ The hosted demo page is available at [examples/index.html](https://xoyojank.gith
 
 [![Click to view video](https://img.youtube.com/vi/Vg8UZWN5cf0/maxresdefault.jpg)](https://youtu.be/Vg8UZWN5cf0)
 
-![examples1.png](examples/examples1.png =480x) ![examples2.png](examples/examples2.png =480x) 
+<img src="examples/examples1.png" width="400"><img src="examples/examples2.png" width="400">
 
-- **Chrome extension**: [`examples/unreal-engine-bridge.zip`](examples/unreal-engine-bridge.zip)
+- **Chrome extension**: [`examples/unreal-engine-bridge.zip`](https://xoyojank.github.io/UnrealEngineBridge/examples/unreal-engine-bridge.zip)
 - **Use cases**: manual QA, bridge verification, and a starting point for your own hosted Unreal tools
 
 ## Features
@@ -65,7 +65,7 @@ Then make sure Unreal Engine exposes the Remote Control HTTP API locally:
 
 For the bridge and the example page to work reliably, configure the following Unreal settings.
 
-![config1.png](examples/config1.png =300x) ![config2.png](examples/config3.png =300x) ![config2.png](examples/config3.png =300x)
+<img src="examples/config1.png" width="250"><img src="examples/config2.png" width="250"><img src="examples/config3.png" width="250">
 
 #### `RemoteControlSettings`
 
