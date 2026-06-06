@@ -14,11 +14,12 @@ Browsers do not allow remote websites to directly call your local Unreal Engine 
 ## Examples
 
 The hosted demo page is available at [examples/index.html](https://xoyojank.github.io/UnrealEngineBridge/examples/index.html).
-![examples1.png](examples/examples1.png)
-![examples2.png](examples/examples2.png)
-![examples3.png](examples/examples3.png)
-- **Page**: `examples/index.html`
-- **Package**: `examples/unreal-engine-bridge.zip`
+
+[![Click to view video](https://img.youtube.com/vi/Vg8UZWN5cf0/maxresdefault.jpg)](https://youtu.be/Vg8UZWN5cf0)
+
+![examples1.png](examples/examples1.png =480x) ![examples2.png](examples/examples2.png =480x) 
+
+- **Chrome extension**: [`examples/unreal-engine-bridge.zip`](examples/unreal-engine-bridge.zip)
 - **Use cases**: manual QA, bridge verification, and a starting point for your own hosted Unreal tools
 
 ## Features
@@ -27,7 +28,7 @@ The hosted demo page is available at [examples/index.html](https://xoyojank.gith
 - Call Unreal Engine Blueprint-exposed functions and Console Commands from a web page
 - Run Unreal Engine Python scripts from a web page for automation, tooling, and content workflows
 - Combine the fast iteration speed of web tools with Unreal Engine's powerful game creation capabilities
-- Get started quickly with the hosted demo page in `examples/index.html` and the extension package in `examples/unreal-engine-bridge.zip`
+- Get started quickly with the hosted demo page in [`examples/index.html`](examples/index.html) and the extension package in [`examples/unreal-engine-bridge.zip`](examples/unreal-engine-bridge.zip)
 - Learn more advanced Remote Control workflows in the [official Unreal Engine documentation](https://dev.epicgames.com/documentation/unreal-engine/remote-control-for-unreal-engine)
 
 ## Installation
@@ -63,6 +64,8 @@ Then make sure Unreal Engine exposes the Remote Control HTTP API locally:
 ### Unreal settings
 
 For the bridge and the example page to work reliably, configure the following Unreal settings.
+
+![config1.png](examples/config1.png =300x) ![config2.png](examples/config3.png =300x) ![config2.png](examples/config3.png =300x)
 
 #### `RemoteControlSettings`
 
