@@ -33,6 +33,10 @@ The hosted demo page is available at [examples/index.html](https://xoyojank.gith
 
 ## Installation
 
+### Install from Chrome Webstore
+this extension has published to Chrome Webstore:
+https://chromewebstore.google.com/detail/unreal-engine-bridge/oofjaldaobmdaeelhikfipjibmfniedi
+
 ### Load unpacked extension from source
 
 1. Open `chrome://extensions`
