@@ -133,17 +133,17 @@
         </div>
         <div class="tool-intro">
             <div class="action-row">
-                <a id="extensionDownloadLink" class="download-link" href="./unreal-engine-bridge.zip" download>Download Unreal Engine Bridge (.zip)</a>
+                <a id="extensionInstallLink" class="download-link" href="https://chromewebstore.google.com/detail/unreal-engine-bridge/oofjaldaobmdaeelhikfipjibmfniedi" target="_blank" rel="noreferrer">Install from Chrome Web Store</a>
+                <a id="extensionZipLink" class="download-link" href="./unreal-engine-bridge.zip" download>Alternative: Download ZIP</a>
                 <button type="button" onclick="refreshBridgeStatus()">Check Extension Connection</button>
             </div>
-            <div id="extensionDownloadFallback" class="hint info" hidden>
-                Download links are only available when this page is served over HTTP(S). If you opened <code>index.html</code> as a local file, go back to the hosted <code>/examples/</code> page to download the extension package.
+            <div class="hint info">
+                Install from the Chrome Web Store for the simplest setup. If the Web Store is unavailable in your environment, use the ZIP package as a fallback and load it manually in Chrome.
             </div>
             <div id="bridgeStatus" class="hint info">Checking extension status...</div>
             <ol class="install-steps">
-                <li>Download and unzip <code>Unreal Engine Bridge</code>.</li>
-                <li>Open <code>chrome://extensions</code> and enable <strong>Developer mode</strong>.</li>
-                <li>Click <strong>Load unpacked</strong> and select the extracted extension folder.</li>
+                <li>Preferred: click <strong>Install from Chrome Web Store</strong> and choose <strong>Add to Chrome</strong>.</li>
+                <li>Fallback: if needed, download the ZIP, unzip it, open <code>chrome://extensions</code>, enable <strong>Developer mode</strong>, and click <strong>Load unpacked</strong> to select the extracted folder.</li>
                 <li>Open any hosted HTTP(S) web tool that implements this bridge protocol in Chrome; <code>/examples/index.html</code> is one example page.</li>
                 <li>Return to this page, click <strong>Check Extension Connection</strong>, then use <strong>Take Screenshot</strong>.</li>
             </ol>
@@ -607,7 +607,8 @@
         const BRIDGE_REQUEST_SOURCE = 'UE_REMOTE_PAGE';
         const BRIDGE_RESPONSE_SOURCE = 'UE_BRIDGE_EXTENSION';
         const BRIDGE_REQUEST_TIMEOUT_MS = 45000;
-        const EXTENSION_DOWNLOAD_FILE_NAME = 'unreal-engine-bridge.zip';
+        const EXTENSION_WEBSTORE_URL = 'https://chromewebstore.google.com/detail/unreal-engine-bridge/oofjaldaobmdaeelhikfipjibmfniedi';
+        const EXTENSION_ZIP_FILE_NAME = 'unreal-engine-bridge.zip';
         const LOCAL_UE_BASE_URL = 'http://127.0.0.1:30010';
         const UNREAL_REMOTE_HTTP_URL = `${LOCAL_UE_BASE_URL}/remote/object/call`;
         const PYTHON_SCRIPT_LIBRARY_OBJECT_PATH = '/Script/PythonScriptPlugin.Default__PythonScriptLibrary';
@@ -801,22 +802,16 @@
             statusElement.textContent = message;
         }
 
-        function configureExtensionDownloadLink() {
-            const linkElement = document.getElementById('extensionDownloadLink');
-            const fallbackElement = document.getElementById('extensionDownloadFallback');
-            const isHostedPage = window.location.protocol === 'http:' || window.location.protocol === 'https:';
+        function configureExtensionInstallLinks() {
+            const installLinkElement = document.getElementById('extensionInstallLink');
+            const zipLinkElement = document.getElementById('extensionZipLink');
 
-            if (!linkElement || !fallbackElement) {
-                return;
+            if (installLinkElement) {
+                installLinkElement.href = EXTENSION_WEBSTORE_URL;
             }
 
-            if (isHostedPage) {
-                linkElement.href = new URL(`/${EXTENSION_DOWNLOAD_FILE_NAME}`, window.location.origin).toString();
-                linkElement.hidden = false;
-                fallbackElement.hidden = true;
-            } else {
-                linkElement.hidden = true;
-                fallbackElement.hidden = false;
+            if (zipLinkElement) {
+                zipLinkElement.href = new URL(`./${EXTENSION_ZIP_FILE_NAME}`, window.location.href).toString();
             }
         }
 
@@ -1250,7 +1245,7 @@
             }
         }
 
-        configureExtensionDownloadLink();
+        configureExtensionInstallLinks();
         window.addEventListener('load', () => {
             refreshBridgeStatus();
         });
